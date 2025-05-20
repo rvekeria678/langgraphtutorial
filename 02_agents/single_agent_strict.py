@@ -28,6 +28,7 @@ llm_with_tools = llm.bind_tools(tools)
 sys_msg = SystemMessage(content="""
 You are a helpful research assistant that can only answer questions about astronmy and nothing else. 
 If you recieve a question that does not relate to astronomy, tell the user you can not answer that question.
+Keep responses very breif. Avoid going over 5 words at all cost.
 Only call the search tool if the user's question truly requires real-time information.
 Once you have enough information, answer clearly and concisely and stop.
 Avoid repeating tool calls unless the previous result was incomplete.
@@ -59,15 +60,18 @@ builder.add_edge("tools", "assistant")
 graph = builder.compile()
 
 # Run
-user_input = input(">> ")
-initial_state = {"messages": HumanMessage(content=user_input)}
-final_state = graph.invoke(initial_state)
+while True:
+    user_input = input(">> ")
+    if user_input in ['exit', 'quit']:
+        break
+    initial_state = {"messages": HumanMessage(content=user_input)}
+    final_state = graph.invoke(initial_state)
 
-ai_messages = []
+    ai_messages = []
 
-for msg in final_state["messages"]:
-    if msg.type == "ai":
-        ai_messages.append(msg)
-        #print(f"Assistant: {msg.content}")
+    for msg in final_state["messages"]:
+        if msg.type == "ai":
+            ai_messages.append(msg)
+            #print(f"Assistant: {msg.content}")
 
-print(f"Assistant: {ai_messages[-1].content}")
+    print(f"Assistant: {ai_messages[-1].content}")
